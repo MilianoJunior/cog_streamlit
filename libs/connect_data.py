@@ -66,10 +66,13 @@ def generate_data(body):
     import random
     registers = body['registers']
     for register in registers:
-        if register['type'] == 'REAL':
-            registers[register['name']] = random.uniform(0, 100)
-        elif register['type'] == 'INT':
-            registers[register['name']] = random.randint(0, 100)
+        if register == 'REAL':
+            for key, value in registers[register].items():
+                registers[register][key] = random.uniform(0, 100)
+        elif register == 'INT':
+            for key, value in registers[register].items():
+                registers[register][key] = random.randint(0, 100)
+    # print(registers)
     return registers
 
 async def get_data(ip, port, data, tipo, unidade):
@@ -82,13 +85,14 @@ async def get_data(ip, port, data, tipo, unidade):
     async with httpx.AsyncClient(verify=False) as client:
         try:
             # Leituras
-            response = await client.post(f"http://{ip}:{port}/readCLP/{tipo}", json=body)
-            leituras_data = response.json()
+            # response = await client.post(f"http://{ip}:{port}/readCLP/{tipo}", json=body)
+            # leituras_data = response.json()
             # save_postgres(ip, unidade, port, leituras_data, tipo)
-            leituras_dataframe = await json_to_dataframe(leituras_data)
-
+            # leituras_dataframe = await json_to_dataframe(leituras_data)
             fim = time.time() - inicio
-            return leituras_dataframe, fim 
+            data = generate_data(body)
+            leituras_dataframe = await json_to_dataframe(data)
+            return leituras_dataframe, fim
         except Exception as e:
             fim = time.time() - inicio
             return generate_data(body), fim
